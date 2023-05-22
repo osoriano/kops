@@ -72,6 +72,17 @@ func (b *ExternalAccessModelBuilder) Build(c *fi.CloudupModelBuilderContext) err
 				}
 				t.SetCidrOrPrefix(sshAccess)
 				AddDirectionalGroupRule(c, t)
+
+				t = &awstasks.SecurityGroupRule{
+					Name:          fi.PtrTo(fmt.Sprintf("ping-external-to-master-%s%s", sshAccess, suffix)),
+					Lifecycle:     b.Lifecycle,
+					SecurityGroup: masterGroup.Task,
+					Protocol:      fi.PtrTo("icmp"),
+					FromPort:      fi.PtrTo(int64(-1)),
+					ToPort:        fi.PtrTo(int64(-1)),
+				}
+				t.SetCidrOrPrefix(sshAccess)
+				AddDirectionalGroupRule(c, t)
 			}
 
 			for _, nodeGroup := range nodeGroups {
@@ -83,6 +94,17 @@ func (b *ExternalAccessModelBuilder) Build(c *fi.CloudupModelBuilderContext) err
 					Protocol:      fi.PtrTo("tcp"),
 					FromPort:      fi.PtrTo(int64(22)),
 					ToPort:        fi.PtrTo(int64(22)),
+				}
+				t.SetCidrOrPrefix(sshAccess)
+				AddDirectionalGroupRule(c, t)
+
+				t = &awstasks.SecurityGroupRule{
+					Name:          fi.PtrTo(fmt.Sprintf("ping-external-to-node-%s%s", sshAccess, suffix)),
+					Lifecycle:     b.Lifecycle,
+					SecurityGroup: nodeGroup.Task,
+					Protocol:      fi.PtrTo("icmp"),
+					FromPort:      fi.PtrTo(int64(-1)),
+					ToPort:        fi.PtrTo(int64(-1)),
 				}
 				t.SetCidrOrPrefix(sshAccess)
 				AddDirectionalGroupRule(c, t)
